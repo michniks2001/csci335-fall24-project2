@@ -3,11 +3,11 @@
 #include "FileTrie.hpp"
 
 
-// Helper function that implements an in-order traversal of the tree to collect thge files within the given range
-inline void collectFiles(Node* node, size_t min, size_t max, std::vector<File*>& result) {
+// Helper function that implements an in-order traversal of the tree to collect the files within the given range
+inline void collectFilesWithinRange(Node* node, size_t min, size_t max, std::vector<File*>& result) {
     if (node == nullptr) return;
 
-    collectFiles(node->left_, min, max, result);
+    collectFilesWithinRange(node->left_, min, max, result);
 
     for (auto file : node->files_) {
         if (file->getSize() >= min && file->getSize() <= max) {
@@ -15,8 +15,27 @@ inline void collectFiles(Node* node, size_t min, size_t max, std::vector<File*>&
         }
     }
 
-    collectFiles(node->right_, min, max, result);
+    collectFilesWithinRange(node->right_, min, max, result);
 
+}
+
+// Helper function for collecting each file from the given node
+inline void collectFilesFromNode(FileTrieNode* node, std::unordered_set<File*>& results) {
+    results.insert(node->matching.begin(), node->matching.end());
+
+    for (const auto& pair : node->next)
+        collectFilesFromNode(pair.second, results);
+}
+
+// Helper function that recursively deletes nodes
+inline void deleteNode(FileTrieNode* node) {
+    if (!node) return;
+
+    for (auto& pair : node->next) {
+        deleteNode(pair.second);
+    }
+
+    delete node;
 }
 
 // ALL YOUR CODE SHOULD BE IN THIS FILE. NO MODIFICATIONS SHOULD BE MADE TO FILEAVL / FILE CLASSES
@@ -38,7 +57,7 @@ std::vector<File*> FileAVL::query(size_t min, size_t max) {
 
     if (min >= max) std::swap(min, max);
 
-    collectFiles(root_, min, max, result);
+    collectFilesWithinRange(root_, min, max, result);
 
     return result;
 }
@@ -67,3 +86,28 @@ void FileTrie::addFile(File* f) {
         current->matching.insert(f);
     }
 }
+
+std::unordered_set<File*> FileTrie::getFilesWithPrefix(const std::string& prefix) const {
+    std::unordered_set<File*> results;
+    FileTrieNode* current = head;
+
+    for (char ch : prefix) {
+        char lowerCh = std::tolower(ch);
+
+        if (current->next.find(lowerCh) == current->next.end()) {
+            return results;
+        }
+        
+        current = current->next[lowerCh];
+    }
+
+    collectFilesFromNode(current, results);
+    return results;
+}
+
+FileTrie::~FileTrie() {
+    if (head) {
+        deleteNode(head);
+    }
+}
+
