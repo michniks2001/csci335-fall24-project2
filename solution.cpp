@@ -35,6 +35,8 @@ inline void deleteNode(FileTrieNode* node) {
         deleteNode(pair.second);
     }
 
+    node->next.clear();
+
     delete node;
 }
 
@@ -73,8 +75,12 @@ FileTrie::FileTrie() : head(new FileTrieNode('\0')) {}
 
 // addFile
 void FileTrie::addFile(File* f) {
-    std::string filename = f->getName();
-    std::transform(filename.begin(), filename.end(), filename.begin(), std::tolower<char>);
+    std::string filename = "";
+
+    for (auto ch : f->getName()) {
+        filename += std::tolower(ch);
+    }
+
     FileTrieNode* current = head;
 
     for (char ch : filename) {
@@ -111,3 +117,64 @@ FileTrie::~FileTrie() {
     }
 }
 
+
+int main() {
+
+
+    // Create files
+    File* file1 = new File("test.txt", "test.txt contents", nullptr); 
+    File* file2 = new File("testing.txt", "testing.txt contents", nullptr); 
+    File* file3 = new File("temp.txt", "temp.txt contents", nullptr); 
+    File* file4 = new File("teaser.txt", "teaser.txt contents", nullptr); 
+    File* file5 = new File("example.txt", "example.txt contents", nullptr); 
+    FileTrie t;
+
+    std::cout << "----------Testing FileTrie Class----------" << std::endl;
+
+    std::cout << "Adding files to trie..." << std::endl;
+    t.addFile(file1);
+    t.addFile(file2);
+    t.addFile(file3);
+    t.addFile(file4);
+    t.addFile(file5);
+    std::cout << "Files added successfully!" << std::endl;
+
+    std::cout << "Searching for files with prefix 'te':" << std::endl;
+    auto results1 = t.getFilesWithPrefix("te");
+    for (const auto& file : results1) {
+        std::cout << "Found: " << file->getName() << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::cout << "Searching for files with prefix 'TE':" << std::endl;
+    auto results2 = t.getFilesWithPrefix("TE");
+    for (const auto& file : results2) {
+        std::cout << "Found: " << file->getName() << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::cout << "Searching for files with prefix 'xyz':" << std::endl;
+    auto results3 = t.getFilesWithPrefix("xyz");
+    for (const auto& file : results3) {
+        std::cout << "Found: " << file->getName() << std::endl;
+    }
+    
+    if (results3.empty())
+        std::cout << "Empty" << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "Searching for files with prefix 't':" << std::endl;
+    auto results4 = t.getFilesWithPrefix("t");
+    for (const auto& file : results4) {
+        std::cout << "Found: " << file->getName() << std::endl;
+    }
+    std::cout << std::endl;
+
+    delete file1;
+    delete file2;
+    delete file3;
+    delete file4;
+    delete file5;
+
+    return 0;
+}
