@@ -118,7 +118,7 @@ FileTrie::~FileTrie() {
 }
 
 
-int main() {
+/* int main() {
 
 
     // Create files
@@ -177,4 +177,4 @@ int main() {
     delete file5;
 
     return 0;
-}
+} */
